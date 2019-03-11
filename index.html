@@ -89,7 +89,7 @@
       
     <script>
 	    $(document).ready(function(){
-            var endpoint = "https://data.cityofchicago.org/resource/cdmx-wzbz.json?$limit=15";
+            var endpoint = "https://data.cityofchicago.org/resource/cdmx-wzbz.json?";
             
                 $("#search").on("click", function() {
                     var filterString = $("#filters").serialize();
@@ -174,23 +174,68 @@
 
     <script>
 // Initialize and add the map
+
+var markers = [];
+
 function initMap() {
   // The location of Uluru
   var chicago = {lat: 41.8781, lng: -87.6298};
   // The map, centered at Uluru
+  // 
+
   var map = new google.maps.Map(
       document.getElementById('map'), {zoom: 11, center: chicago});
+    
+    
+	    $(document).ready(function(){
+            var endpoint = "https://data.cityofchicago.org/resource/cdmx-wzbz.json?";
 
-  $.get("https://data.cityofchicago.org/resource/cdmx-wzbz.json",
+                $("#search").on("click", function() {
+                    DeleteMarkers();
+                    var filterString = $("#filters").serialize();
+                    console.log(filterString);
+       
+                    var searchString = $("#ward").val();
+                    console.log(searchString);
+                    var url = endpoint + "&ward=" + searchString;
+                    console.log(url);
 
-      function(response) {
-        console.log("in data callback");
+                    var status = $("#status").val();
+                    console.log(status);
+
+                    if (status != ""){
+                        url = url + "&status=" + status;
+                        console.log(url);
+                    }
+
+$.get(url,
+
+              function(response) {
+        console.log(url);
         var data = response;
         createMarkers(map, data );
       });
+                  
 
+      });
+
+         
+
+    });
+    
+    
+    
 }
 
+          function DeleteMarkers() {
+        //Loop through all the markers and remove
+        for (var i = 0; i < markers.length; i++) {
+            markers[i].setMap(null);
+        }
+        markers = [];
+    }
+        
+        
   function createMarkers (map, data) {
     console.log(data);
     $.each(data, function(i,v) {
@@ -219,12 +264,16 @@ function initMap() {
       marker.addListener('click', function() {
         infowindow.open(map, marker);
       });
+      markers.push(marker);
+        
 
     });
+      
 
-  }
 
+  
 
+}
 
     </script>
     <!--Load the API from the specified URL
