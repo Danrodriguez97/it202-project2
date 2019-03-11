@@ -14,9 +14,17 @@
 			display: none;
 			margin: 1em;
 		}
-        .Open {color: blue;}
+        .Open {color: purple;}
         .Completed {color: Green;}
 	</style>
+    
+    <style>
+       /* Set the size of the div element that contains the map */
+      #map {
+        height: 400px;  /* The height is 400 pixels */
+        width: 100%;  /* The width is the width of the web page */
+       }
+    </style>
 
 </head>
 
@@ -55,22 +63,26 @@
       
     <button id="search">Search</button>
 
-      
-      
-     <div id="cards"></div>
+  
+    
+  </div>
+    
+    
+  <div class="content" id="list">
+    List Page
+       
+
+    <div id="cards"></div>
 
 	<div class="card template" style="width: 18rem;">
 		<div class="card-body">
-			<h5 class="card-title">Card title</h5>
-			<h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
-			<p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-			<a href="#" class="card-link">Card link</a>
-			<a href="#" class="card-link">Another link</a>
+			<h5 class="card-title"></h5>
+			<h6 class="card-subtitle mb-2 text-muted"></h6>
+			<p class="card-text"></p>
+	
 		</div>
 	</div> 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js">
-
-	</script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> 
       
       
 
@@ -119,12 +131,15 @@
 
                             clone.find(".card-title").attr("data-status", v.status);
 
-                            clone.find(".card-subtitle").text(v.ward);
+                            clone.find(".card-subtitle").text("Created: " + v.creation_date);
             
                             if (v.where_is_the_graffiti_located_) {
-                              clone.find(".card-text").text(v.where_is_the_graffiti_located_);
+                              clone.find(".card-text").html("Located: " +v.where_is_the_graffiti_located_ + 
+                                                            "<br />Status: " + v.status + "<br />Completion Date: " + v.completion_date +
+                                                            "<br />Service Number: " + v.service_request_number + "<br /> Surface:" + 
+                                                             v.what_type_of_surface_is_the_graffiti_on_);
                             } else {
-                              clone.find(".card-text").text("")
+                              clone.find(".card-text").html("")
                             }
    
                             clone.removeClass("template")
@@ -141,22 +156,7 @@
       });
 
     });
-	</script>
-      
-      
-      
-      
-    
-    
-  </div>
-  <div class="content" id="list">
-    List Page
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    
-    <p> </p>
-
-      
+	</script>  
    
     
 
@@ -165,6 +165,79 @@
   </div>
   <div class="content" id="map">
     Map Page
+      
+    <h3>Graffiti Removal Requests Map</h3>
+    <!--The div element for the map -->
+    <div id="map"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <script>
+// Initialize and add the map
+function initMap() {
+  // The location of Uluru
+  var chicago = {lat: 41.8781, lng: -87.6298};
+  // The map, centered at Uluru
+  var map = new google.maps.Map(
+      document.getElementById('map'), {zoom: 11, center: chicago});
+
+  $.get("https://data.cityofchicago.org/resource/cdmx-wzbz.json",
+
+      function(response) {
+        console.log("in data callback");
+        var data = response;
+        createMarkers(map, data );
+      });
+
+}
+
+  function createMarkers (map, data) {
+    console.log(data);
+    $.each(data, function(i,v) {
+
+      var location = {lat: parseFloat(v.latitude), lng: parseFloat(v.longitude) }
+      
+      var marker = new google.maps.Marker({position: location, map: map});
+
+      if(v.status == "Open"){
+          var infowindow = new google.maps.InfoWindow({
+            content: v.street_address + "<br />" + "Creation Date: " + v.creation_date + "<br />Located: " +v.where_is_the_graffiti_located_ + 
+                                                            "<br />Status: " + v.status +
+                                                            "<br />Service Number: " + v.service_request_number + "<br /> Surface:" + 
+                                                             v.what_type_of_surface_is_the_graffiti_on_
+          });
+      }else{
+          var infowindow = new google.maps.InfoWindow({
+            content: v.street_address + "<br />" + "Creation Date: " + v.creation_date + "<br />Located: " +v.where_is_the_graffiti_located_ + 
+                                                            "<br />Status: " + v.status + "<br />Completion Date: " + v.completion_date +
+                                                            "<br />Service Number: " + v.service_request_number + "<br /> Surface:" + 
+                                                             v.what_type_of_surface_is_the_graffiti_on_
+          });   
+      }
+      
+
+      marker.addListener('click', function() {
+        infowindow.open(map, marker);
+      });
+
+    });
+
+  }
+
+
+
+    </script>
+    <!--Load the API from the specified URL
+    * The async attribute allows the browser to render the page while the API loads
+    * The key parameter will contain your own API key (which is not needed for this tutorial)
+    * The callback parameter executes the initMap() function
+    -->
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDa4dMSOASs_iLQnhrPoQ8EZgj2Im_pZ7o&callback=initMap">
+    </script>  
+      
+      
+    
   </div>
 
 
